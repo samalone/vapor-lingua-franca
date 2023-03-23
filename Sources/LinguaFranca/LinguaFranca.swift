@@ -1,4 +1,4 @@
-public struct vapor_lingua_franca {
+public struct LinguaFranca {
     public private(set) var text = "Hello, World!"
 
     public init() {

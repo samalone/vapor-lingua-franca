@@ -1,11 +1,12 @@
 import XCTest
-@testable import vapor_lingua_franca
+@testable import LinguaFranca
 
-final class vapor_lingua_francaTests: XCTestCase {
+final class LinguaFrancaTests: XCTestCase {
     func testExample() throws {
         // This is an example of a functional test case.
         // Use XCTAssert and related functions to verify your tests produce the correct
         // results.
-        XCTAssertEqual(vapor_lingua_franca().text, "Hello, World!")
+        XCTAssertEqual(LinguaFranca().text, "Hello, World!")
     }
 }
+
