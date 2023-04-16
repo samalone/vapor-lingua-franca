@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import URLQueryCoder
 
 fileprivate let jsonContentType = "application/json; charset=utf-8"
 
@@ -19,10 +20,11 @@ public enum PathPart<ActionType>: ExpressibleByStringInterpolation {
     }
 }
 
-
 /// None is a special ServerAction.ResponseType that indicates the
 /// server does not provide any data in the body of the response.
-public struct None: Codable {}
+public struct None: Codable {
+    public init() {}
+}
 
 public protocol ServerAction {
     typealias Path = [PathPart<Self>]
@@ -32,13 +34,17 @@ public protocol ServerAction {
     
     associatedtype RequestBodyType: Codable
     associatedtype ResponseType: Codable
+    associatedtype QueryType: Codable
     
-    var requestBody: RequestBodyType { get }
+    var requestBody: RequestBodyType { get set }
+    var query: QueryType { get set }
     
     func buildRequest(to baseURL: URL, encoder: JSONEncoder) throws -> URLRequest
     
     /// Set the Accept header of the request according to the ResponseType of the action.
     func setAcceptHeader(_ request: inout URLRequest)
+    
+    init()
 }
 
 // If the user doesn't specify a ResponseType, assume None.
@@ -55,11 +61,12 @@ public extension ServerAction where ResponseType == None {
     }
 }
 
+
 // If the ResponseType isn't None, assume the method is GET
 public extension ServerAction {
     static var method: RequestMethod { .GET }
     
-    func at(baseURL: URL) -> URL {
+    func at(baseURL: URL) throws -> URL {
         var result = baseURL
         for component in Self.path {
             switch component {
@@ -70,11 +77,18 @@ public extension ServerAction {
                 result.append(component: String(describing: value))
             }
         }
+        
+        var comp = URLComponents()
+        comp.query = try URLQueryEncoder().encode(query)
+        if let qi = comp.queryItems {
+            result.append(queryItems: qi)
+        }
+        
         return result
     }
     
     func buildRequest(to baseURL: URL, encoder: JSONEncoder) throws -> URLRequest {
-        var req = URLRequest(url: self.at(baseURL: baseURL))
+        var req = try URLRequest(url: self.at(baseURL: baseURL))
         req.httpMethod = Self.method.rawValue
         req.setValue(jsonContentType, forHTTPHeaderField: "Content-Type")
         req.httpBody = try encoder.encode(requestBody)
@@ -97,7 +111,7 @@ public extension ServerAction where RequestBodyType == None {
     }
     
     func buildRequest(to baseURL: URL, encoder: JSONEncoder) throws -> URLRequest {
-        var req = URLRequest(url: self.at(baseURL: baseURL))
+        var req = try URLRequest(url: self.at(baseURL: baseURL))
         req.httpMethod = Self.method.rawValue
         setAcceptHeader(&req)
         return req
