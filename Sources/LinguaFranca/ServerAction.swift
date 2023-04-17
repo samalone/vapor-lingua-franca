@@ -39,10 +39,12 @@ public protocol ServerAction {
     var requestBody: RequestBodyType { get set }
     var query: QueryType { get set }
     
+    #if os(macOS) || os(iOS)
     func buildRequest(to baseURL: URL, encoder: JSONEncoder) throws -> URLRequest
     
     /// Set the Accept header of the request according to the ResponseType of the action.
     func setAcceptHeader(_ request: inout URLRequest)
+    #endif
     
     init()
 }
@@ -56,9 +58,11 @@ public protocol ServerAction {
 public extension ServerAction where ResponseType == None {
     static var method: RequestMethod { .POST }
     
+    #if os(macOS) || os(iOS)
     func setAcceptHeader(_ request: inout URLRequest) {
         // do nothing
     }
+    #endif
 }
 
 
@@ -87,6 +91,7 @@ public extension ServerAction {
         return result
     }
     
+    #if os(macOS) || os(iOS)
     func buildRequest(to baseURL: URL, encoder: JSONEncoder) throws -> URLRequest {
         var req = try URLRequest(url: self.at(baseURL: baseURL))
         req.httpMethod = Self.method.rawValue
@@ -103,6 +108,7 @@ public extension ServerAction {
     func setAcceptHeader(_ request: inout URLRequest) {
         request.setValue(jsonContentType, forHTTPHeaderField: "Accept")
     }
+    #endif
 }
 
 public extension ServerAction where RequestBodyType == None {
@@ -110,12 +116,14 @@ public extension ServerAction where RequestBodyType == None {
         None()
     }
     
+    #if os(macOS) || os(iOS)
     func buildRequest(to baseURL: URL, encoder: JSONEncoder) throws -> URLRequest {
         var req = try URLRequest(url: self.at(baseURL: baseURL))
         req.httpMethod = Self.method.rawValue
         setAcceptHeader(&req)
         return req
     }
+    #endif
 }
 
 public protocol GetAction: ServerAction where RequestBodyType == None {

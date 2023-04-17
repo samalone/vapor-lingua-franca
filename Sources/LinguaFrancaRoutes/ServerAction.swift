@@ -43,4 +43,3 @@ extension Request {
         return try JSONDecoder().decode(T.self, from: data)
     }
 }
-
