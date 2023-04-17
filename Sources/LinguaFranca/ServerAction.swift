@@ -70,28 +70,28 @@ public extension ServerAction where ResponseType == None {
 public extension ServerAction {
     static var method: RequestMethod { .GET }
     
+    #if os(macOS) || os(iOS)
     func at(baseURL: URL) throws -> URL {
         var result = baseURL
         for component in Self.path {
             switch component {
             case .constant(let string):
-                result = result.appending(component: string)
+                result.append(component: string)
             case .param(let partialKeyPath):
                 let value = self[keyPath: partialKeyPath]
-                result = result.appending(component: String(describing: value))
+                result.append(component: String(describing: value))
             }
         }
         
         var comp = URLComponents()
         comp.query = try URLQueryEncoder().encode(query)
         if let qi = comp.queryItems {
-            result = result.appending(queryItems: qi)
+            result.append(queryItems: qi)
         }
         
         return result
     }
     
-    #if os(macOS) || os(iOS)
     func buildRequest(to baseURL: URL, encoder: JSONEncoder) throws -> URLRequest {
         var req = try URLRequest(url: self.at(baseURL: baseURL))
         req.httpMethod = Self.method.rawValue

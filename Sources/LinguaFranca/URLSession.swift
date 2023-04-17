@@ -7,6 +7,7 @@
 
 import Foundation
 
+#if os(macOS) || os(iOS)
 public extension URLSession {
     
     func send<ActionType: ServerAction>(action: ActionType, to baseURL: URL) async throws -> ActionType.ResponseType {
@@ -20,3 +21,4 @@ public extension URLSession {
     }
     
 }
+#endif
