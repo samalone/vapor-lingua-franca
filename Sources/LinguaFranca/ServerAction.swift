@@ -75,17 +75,17 @@ public extension ServerAction {
         for component in Self.path {
             switch component {
             case .constant(let string):
-                result.append(component: string)
+                result = result.appending(component: string)
             case .param(let partialKeyPath):
                 let value = self[keyPath: partialKeyPath]
-                result.append(component: String(describing: value))
+                result = result.appending(component: String(describing: value))
             }
         }
         
         var comp = URLComponents()
         comp.query = try URLQueryEncoder().encode(query)
         if let qi = comp.queryItems {
-            result.append(queryItems: qi)
+            result = result.appending(queryItems: qi)
         }
         
         return result
